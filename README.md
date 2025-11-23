@@ -59,12 +59,25 @@ Ersetze bei Bedarf `panda260` durch den GitHub-Nutzer oder die Organisation des 
 Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
 
 - `redis`: Redis-Server mit Passwort (Standard `redispw`).
-- `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht.
+- `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht (Standard-Build-Kontext `./redis-api`).
 - `redis-web`: Dieses Webinterface, vorkonfiguriert für den internen API-Service.
 
 Starten unter http://localhost:8084:
 
 ```bash
+docker compose up -d
+```
+
+Wenn dein Deploy-Tool nur die Compose-Datei lädt und den Ordner `redis-api` nicht mitkopiert, kannst du das Image statt zu
+bauen auch direkt ziehen bzw. einen externen Build-Kontext angeben:
+
+```bash
+# Eigenes vorgebautes Image verwenden (z.B. aus einer Registry)
+export REDIS_API_IMAGE=registry.example.com/redis-web-api:latest
+docker compose up -d
+
+# Alternativ Build-Kontext aus einem Git-Repository referenzieren
+export REDIS_API_BUILD_CONTEXT=https://github.com/<OWNER>/redis-web.git#main:redis-api
 docker compose up -d
 ```
 

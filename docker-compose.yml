@@ -8,7 +8,9 @@ services:
       - redis-demo
 
   redis-api:
-    build: ./redis-api
+    image: ${REDIS_API_IMAGE:-redis-web-api:local}
+    build:
+      context: ${REDIS_API_BUILD_CONTEXT:-./redis-api}
     container_name: redis-api
     restart: unless-stopped
     environment:
