@@ -1,0 +1,4 @@
+# Exclude development and CI files from the image build context
+.git
+.github
+*.md
