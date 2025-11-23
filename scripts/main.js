@@ -1,5 +1,6 @@
 const dom = {
   connectionForm: document.getElementById("connection-form"),
+  protocol: document.getElementById("redis-protocol"),
   host: document.getElementById("redis-host"),
   port: document.getElementById("redis-port"),
   username: document.getElementById("redis-username"),
@@ -20,6 +21,7 @@ const dom = {
 
 const state = {
   baseUrl: "",
+  protocol: "http",
   username: "",
   password: "",
   entries: [],
@@ -35,6 +37,7 @@ init();
 function init() {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
   if (saved) {
+    dom.protocol.value = saved.protocol || "http";
     dom.host.value = saved.host || "";
     dom.port.value = saved.port || "";
     dom.username.value = saved.username || "";
@@ -44,6 +47,7 @@ function init() {
   dom.connectionForm.addEventListener("submit", handleConnect);
   dom.refreshBtn.addEventListener("click", loadEntries);
   dom.addForm.addEventListener("submit", handleAdd);
+  dom.protocol.addEventListener("change", updatePortPlaceholder);
   dom.search.addEventListener("input", () => {
     state.filter = dom.search.value.toLowerCase();
     renderEntries();
@@ -54,6 +58,13 @@ function init() {
     renderCategories();
     renderEntries();
   });
+
+  updatePortPlaceholder();
+}
+
+function updatePortPlaceholder() {
+  const protocol = dom.protocol.value;
+  dom.port.placeholder = protocol === "https" ? "443" : "80";
 }
 
 function setStatus(text, tone = "muted") {
@@ -64,13 +75,21 @@ function setStatus(text, tone = "muted") {
 function saveConnectionInfo(host, port, username, password, baseUrl) {
   localStorage.setItem(
     STORAGE_KEY,
-    JSON.stringify({ host, port, username, password, baseUrl })
+    JSON.stringify({
+      host,
+      port,
+      username,
+      password,
+      baseUrl,
+      protocol: dom.protocol.value || "http",
+    })
   );
 }
 
-function buildBaseUrl(host, port) {
+function buildBaseUrl(protocol, host, port) {
   try {
-    const prefixed = host.match(/^https?:\/\//) ? host : `https://${host}`;
+    const sanitizedHost = host.replace(/^https?:\/\//, "");
+    const prefixed = `${protocol}://${sanitizedHost}`;
     const url = new URL(prefixed);
     if (port) url.port = port;
     return url.toString().replace(/\/$/, "");
@@ -87,11 +106,18 @@ async function sendCommand(command) {
     headers["Authorization"] = `Basic ${btoa(`${state.username}:${state.password}`)}`;
   }
 
-  const response = await fetch(state.baseUrl, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ command }),
-  });
+  let response;
+  try {
+    response = await fetch(state.baseUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ command }),
+    });
+  } catch (error) {
+    throw new Error(
+      `Network error: ${error.message}. If you are on HTTPS, HTTP endpoints will be blocked.`
+    );
+  }
 
   if (!response.ok) {
     const text = await response.text();
@@ -111,8 +137,17 @@ async function handleConnect(event) {
   const port = dom.port.value.trim();
   const username = dom.username.value.trim();
   const password = dom.password.value.trim();
+  const protocol = dom.protocol.value || "http";
 
-  const baseUrl = buildBaseUrl(host, port);
+  if (window.location.protocol === "https:" && protocol === "http") {
+    setStatus(
+      "HTTPS pages cannot call HTTP endpoints. Pick https or open the UI over http.",
+      "danger"
+    );
+    return;
+  }
+
+  const baseUrl = buildBaseUrl(protocol, host, port);
   if (!baseUrl) {
     setStatus("Invalid URL", "danger");
     return;
@@ -124,6 +159,7 @@ async function handleConnect(event) {
 
   try {
     state.baseUrl = baseUrl;
+    state.protocol = protocol;
     state.username = username;
     state.password = password;
 

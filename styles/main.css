@@ -69,11 +69,11 @@ h1, h2, h3 { margin: 4px 0; }
 
 label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
 
-input, textarea, button {
+input, textarea, button, select {
   font: inherit;
 }
 
-input, textarea {
+input, textarea, select {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -81,7 +81,7 @@ input, textarea {
   color: var(--text);
 }
 
-input:focus, textarea:focus { outline: 2px solid var(--accent); }
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); }
 
 button {
   cursor: pointer;
