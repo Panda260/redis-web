@@ -52,8 +52,21 @@ Die Seite ist danach unter http://localhost:8080 erreichbar.
 
 ### Image aus GHCR nutzen
 ```bash
-docker pull ghcr.io/<OWNER>/redis-web:latest
-docker run --rm -p 8080:80 ghcr.io/<OWNER>/redis-web:latest
+docker pull ghcr.io/panda260/redis-web:latest
+docker run --rm -p 8080:80 ghcr.io/panda260/redis-web:latest
 ```
 
-Ersetze `<OWNER>` durch den GitHub-Nutzer oder die Organisation des Repositories. Mit Tags aus Branch- oder Release-Namen kannst du auch bestimmte Stände ziehen (siehe Workflow-Definition für die vergebenen Tags).
+Ersetze bei Bedarf `panda260` durch den GitHub-Nutzer oder die Organisation des Repositories. Mit Tags aus Branch- oder Release-Namen kannst du auch bestimmte Stände ziehen (siehe Workflow-Definition für die vergebenen Tags).
+
+### Docker Compose
+Eine einfache `docker-compose.yml` zum lokalen Starten liegt im Repository. Starte die Seite unter http://localhost:8080 mit:
+
+```bash
+docker compose up -d
+```
+
+Zum Stoppen und Entfernen der Container:
+
+```bash
+docker compose down
+```
