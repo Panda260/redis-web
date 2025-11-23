@@ -1,10 +1,10 @@
 const dom = {
   connectionForm: document.getElementById("connection-form"),
-  protocol: document.getElementById("redis-protocol"),
   host: document.getElementById("redis-host"),
   port: document.getElementById("redis-port"),
   username: document.getElementById("redis-username"),
   password: document.getElementById("redis-password"),
+  proxy: document.getElementById("cors-proxy"),
   connectBtn: document.getElementById("connect-btn"),
   refreshBtn: document.getElementById("refresh-btn"),
   addForm: document.getElementById("add-form"),
@@ -21,9 +21,9 @@ const dom = {
 
 const state = {
   baseUrl: "",
-  protocol: "http",
   username: "",
   password: "",
+  proxyUrl: "",
   entries: [],
   filter: "",
   category: "",
@@ -31,23 +31,30 @@ const state = {
 };
 
 const STORAGE_KEY = "redis-web-connection";
+const config = window.__REDIS_WEB_CONFIG || {};
 
 init();
 
 function init() {
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
+  dom.host.value = config.host || "";
+  dom.port.value = config.port || "";
+  dom.username.value = config.username || "";
+  dom.password.value = config.prefillPassword ? config.password || "" : "";
+  dom.proxy.value = config.proxyUrl || "";
+
   if (saved) {
-    dom.protocol.value = saved.protocol || "http";
-    dom.host.value = saved.host || "";
-    dom.port.value = saved.port || "";
-    dom.username.value = saved.username || "";
-    dom.password.value = saved.password || "";
+    dom.host.value = saved.host || dom.host.value;
+    dom.port.value = saved.port || dom.port.value;
+    dom.username.value = saved.username || dom.username.value;
+    dom.password.value = saved.password || dom.password.value;
+    dom.proxy.value = saved.proxyUrl || dom.proxy.value;
   }
 
   dom.connectionForm.addEventListener("submit", handleConnect);
   dom.refreshBtn.addEventListener("click", loadEntries);
   dom.addForm.addEventListener("submit", handleAdd);
-  dom.protocol.addEventListener("change", updatePortPlaceholder);
   dom.search.addEventListener("input", () => {
     state.filter = dom.search.value.toLowerCase();
     renderEntries();
@@ -59,12 +66,6 @@ function init() {
     renderEntries();
   });
 
-  updatePortPlaceholder();
-}
-
-function updatePortPlaceholder() {
-  const protocol = dom.protocol.value;
-  dom.port.placeholder = protocol === "https" ? "443" : "80";
 }
 
 function setStatus(text, tone = "muted") {
@@ -81,15 +82,33 @@ function saveConnectionInfo(host, port, username, password, baseUrl) {
       username,
       password,
       baseUrl,
-      protocol: dom.protocol.value || "http",
+      proxyUrl: dom.proxy.value || "",
     })
   );
 }
 
-function buildBaseUrl(protocol, host, port) {
+function normalizeProxyUrl(url) {
+  if (!url) return "";
   try {
-    const sanitizedHost = host.replace(/^https?:\/\//, "");
-    const prefixed = `${protocol}://${sanitizedHost}`;
+    const normalized = new URL(url);
+    return normalized.toString().replace(/\/$/, "");
+  } catch (error) {
+    return "";
+  }
+}
+
+function buildRequestUrl() {
+  if (!state.baseUrl) throw new Error("Not connected");
+  if (!state.proxyUrl) return state.baseUrl;
+
+  const trimmedProxy = state.proxyUrl.replace(/\/$/, "");
+  const target = state.baseUrl.replace(/^\//, "");
+  return `${trimmedProxy}/${target}`;
+}
+
+function buildBaseUrl(host, port) {
+  try {
+    const prefixed = host.match(/^https?:\/\//i) ? host : `http://${host}`;
     const url = new URL(prefixed);
     if (port) url.port = port;
     return url.toString().replace(/\/$/, "");
@@ -99,7 +118,7 @@ function buildBaseUrl(protocol, host, port) {
 }
 
 async function sendCommand(command) {
-  if (!state.baseUrl) throw new Error("Not connected");
+  const requestUrl = buildRequestUrl();
   const headers = { "Content-Type": "application/json" };
   const hasAuth = state.username || state.password;
   if (hasAuth) {
@@ -108,25 +127,17 @@ async function sendCommand(command) {
 
   let response;
   try {
-    response = await fetch(state.baseUrl, {
+    response = await fetch(requestUrl, {
       method: "POST",
       headers,
       body: JSON.stringify({ command }),
     });
   } catch (error) {
-    const protocolHint = (() => {
-      if (window.location.protocol === "https:" && state.protocol === "http") {
-        const insecureUrlSuggestion = window.location.href.replace(/^https:/i, "http:");
-        return `This page is loaded over HTTPS, so HTTP endpoints will be blocked. Open the UI over HTTP instead: ${insecureUrlSuggestion}.`;
-      }
-      return "Check that the selected protocol matches your endpoint (http vs https) and that the port is correct.";
-    })();
+    const corsHint = state.proxyUrl
+      ? "The configured CORS proxy rejected the request; verify the proxy URL works for your endpoint."
+      : "If the endpoint blocks CORS, provide a CORS proxy URL in the connection form.";
 
-    const corsHint = "CORS must be enabled on the Redis HTTP endpoint for the request to succeed.";
-
-    throw new Error(
-      `Network error: ${error.message}. ${protocolHint} ${corsHint}`
-    );
+    throw new Error(`Network error: ${error.message}. ${corsHint}`);
   }
 
   if (!response.ok) {
@@ -147,18 +158,9 @@ async function handleConnect(event) {
   const port = dom.port.value.trim();
   const username = dom.username.value.trim();
   const password = dom.password.value.trim();
-  const protocol = dom.protocol.value || "http";
+  const proxyUrl = normalizeProxyUrl(dom.proxy.value.trim());
 
-  if (window.location.protocol === "https:" && protocol === "http") {
-    const insecureUrlSuggestion = window.location.href.replace(/^https:/i, "http:");
-    setStatus(
-      `HTTPS pages cannot call HTTP endpoints. Open this UI over HTTP instead: ${insecureUrlSuggestion}`,
-      "danger"
-    );
-    return;
-  }
-
-  const baseUrl = buildBaseUrl(protocol, host, port);
+  const baseUrl = buildBaseUrl(host, port);
   if (!baseUrl) {
     setStatus("Invalid URL", "danger");
     return;
@@ -170,16 +172,20 @@ async function handleConnect(event) {
 
   try {
     state.baseUrl = baseUrl;
-    state.protocol = protocol;
     state.username = username;
     state.password = password;
+    state.proxyUrl = proxyUrl;
 
     await sendCommand(["PING"]);
     saveConnectionInfo(host, port, username, password, baseUrl);
     dom.refreshBtn.disabled = false;
     dom.clearFilter.disabled = false;
 
-    setStatus(`Connected to ${baseUrl}`, "success");
+    const statusTarget = proxyUrl
+      ? `${proxyUrl} → ${baseUrl}`
+      : baseUrl;
+
+    setStatus(`Connected to ${statusTarget}`, "success");
     await loadEntries();
   } catch (error) {
     console.error(error);

@@ -6,6 +6,7 @@
     <title>Redis Messages Manager</title>
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="stylesheet" href="styles/main.css" />
+    <script src="scripts/config.js"></script>
   </head>
 
 <body>
@@ -23,19 +24,12 @@
       <h2>Connection</h2>
       <form id="connection-form" class="form-grid">
         <label>
-          Protocol
-          <select id="redis-protocol" name="protocol">
-            <option value="http">http</option>
-            <option value="https">https</option>
-          </select>
-        </label>
-        <label>
           Redis URL
-          <input id="redis-host" name="host" type="text" placeholder="https://example.com" required />
+          <input id="redis-host" name="host" type="text" placeholder="http://example.com" required />
         </label>
         <label>
           Port
-          <input id="redis-port" name="port" type="number" min="1" max="65535" placeholder="443" />
+          <input id="redis-port" name="port" type="number" min="1" max="65535" placeholder="80" />
         </label>
         <label>
           Username
@@ -45,12 +39,16 @@
           Password / Token
           <input id="redis-password" name="password" type="password" placeholder="Required" required />
         </label>
+        <label>
+          CORS Proxy (optional)
+          <input id="cors-proxy" name="proxy" type="text" placeholder="https://cors.isomorphic-git.org" />
+        </label>
         <div class="form-actions">
           <button type="submit" id="connect-btn">Connect</button>
           <button type="button" id="refresh-btn" disabled>Refresh</button>
         </div>
       </form>
-      <p class="hint">The page uses the Redis REST API (for example Upstash or Webdis). Credentials stay in your browser. If your endpoint only supports HTTP, open this UI with http:// to avoid mixed-content blocking.</p>
+      <p class="hint">The page uses the Redis REST API (for example Upstash or Webdis). Credentials stay in your browser. When CORS is disabled on the Redis endpoint, provide a proxy URL (for example cors.isomorphic-git.org) to route requests through a CORS-enabled relay.</p>
     </div>
   </section>
 
