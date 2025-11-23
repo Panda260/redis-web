@@ -65,15 +65,26 @@ Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
 Starten unter http://localhost:8084:
 
 ```bash
+# Eigenes vorgebautes Image verwenden (z.B. aus einer Registry)
+export REDIS_API_IMAGE=registry.example.com/redis-web-api:latest
+docker compose up -d
+
+# Alternativ Build-Kontext aus einem Git-Repository referenzieren
+export REDIS_API_BUILD_CONTEXT=https://github.com/<OWNER>/redis-web.git#main:redis-api
 docker compose up -d
 ```
 
 Wenn dein Deploy-Tool nur die Compose-Datei lädt und den Ordner `redis-api` nicht mitkopiert, kannst du das Image statt zu
 bauen auch direkt ziehen bzw. einen externen Build-Kontext angeben:
 
+> Standardmäßig wird für `redis-api` nichts aus einer Registry gezogen (`REDIS_API_PULL_POLICY=never`), damit `docker compose pull`
+> nicht fehlschlägt, wenn nur der Build-Kontext lokal vorhanden ist.
+
 ```bash
 # Eigenes vorgebautes Image verwenden (z.B. aus einer Registry)
 export REDIS_API_IMAGE=registry.example.com/redis-web-api:latest
+# Beim alleinigen Ziehen eines vorgebauten Images das Pull-Verhalten steuern (Standard: nie ziehen, lokal bauen)
+export REDIS_API_PULL_POLICY=missing
 docker compose up -d
 
 # Alternativ Build-Kontext aus einem Git-Repository referenzieren
