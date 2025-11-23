@@ -3,7 +3,7 @@
 A lightweight browser UI to manage the `messages` hash in Redis. Enter your Redis REST endpoint (for example Upstash or Webdis), authenticate, and edit hash fields directly from GitHub Pages.
 
 ## Features
-- Connect with URL, port, protocol (http/https), username, and password/token.
+- Connect with URL, port, username, and password/token.
 - Lists fields from the `messages` hash with inline editing and deletion.
 - Add new key/value pairs.
 - Search filter plus prefix-based categories (e.g., all `clan.*` fields together).
@@ -19,11 +19,8 @@ No build tooling is required—open `index.html` in a modern browser. For local 
 
 ## Nutzung
 1. Öffne die Seite (lokal oder via GitHub Pages).
-2. Wähle im Dropdown das Protokoll (`http` oder `https`). Der Port-Platzhalter passt sich an (80/443), du kannst aber jeden Port eintragen.
-3. Gib Host/URL, Port, Benutzername und Passwort/Token ein. Die Daten bleiben nur in deinem Browser gespeichert.
+2. Gib Host/URL, Port, Benutzername und Passwort/Token ein. Die Daten bleiben nur in deinem Browser gespeichert.
 4. Verbinde dich, warte auf "Connected", und bearbeite dann die Einträge im `messages`-Hash. Kategorien entstehen automatisch über den Präfix vor dem ersten Punkt (z.B. `clan.*`).
-
-> Mixed Content: Wenn die Seite über HTTPS geladen wird, müssen Requests ebenfalls HTTPS nutzen. Für reine HTTP-Endpunkte die Seite lokal oder über eine HTTP-Hosting-URL öffnen.
 
 ## Deployment (GitHub Pages)
 Eine GitHub-Actions-Workflow-Datei liegt unter `.github/workflows/deploy.yml`. Pushes auf `main` oder `work` bauen und veröffentlichen die statische Seite automatisch als GitHub Pages.
@@ -59,10 +56,22 @@ docker run --rm -p 8080:80 ghcr.io/panda260/redis-web:latest
 Ersetze bei Bedarf `panda260` durch den GitHub-Nutzer oder die Organisation des Repositories. Mit Tags aus Branch- oder Release-Namen kannst du auch bestimmte Stände ziehen (siehe Workflow-Definition für die vergebenen Tags).
 
 ### Docker Compose
-Eine einfache `docker-compose.yml` zum lokalen Starten liegt im Repository. Starte die Seite unter http://localhost:8080 mit:
+Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
+
+- `redis`: Redis-Server mit Passwort (Standard `redispw`).
+- `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht.
+- `redis-web`: Dieses Webinterface, vorkonfiguriert für den internen API-Service.
+
+Starten unter http://localhost:8084:
 
 ```bash
 docker compose up -d
+```
+
+Standard-Zugangsdaten sind bereits im Webinterface vorausgefüllt. Ob das Passwort automatisch eingesetzt wird, steuerst du über die Umgebungsvariable `PREFILL_PASSWORD` (Standard `false`). Für lokale Tests kannst du das Passwort ausfüllen lassen mit:
+
+```bash
+PREFILL_PASSWORD=true docker compose up -d
 ```
 
 Zum Stoppen und Entfernen der Container:

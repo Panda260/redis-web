@@ -1,7 +1,42 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-redispw}"]
+    networks:
+      - redis-demo
+
+  redis-api:
+    build: ./redis-api
+    container_name: redis-api
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redispw}
+    ports:
+      - "7379:8080"
+    depends_on:
+      - redis
+    networks:
+      - redis-demo
+
   redis-web:
-    image: ghcr.io/panda260/redis-web:latest
+    build: .
     container_name: redis-web
     restart: unless-stopped
+    environment:
+      REDIS_WEB_HOST: redis-api
+      REDIS_WEB_PORT: "8080"
+      REDIS_WEB_PASSWORD: ${REDIS_PASSWORD:-redispw}
+      PREFILL_PASSWORD: "${PREFILL_PASSWORD:-false}"
     ports:
-      - "8080:80"
+      - "8084:80"
+    depends_on:
+      - redis-api
+    networks:
+      - redis-demo
+
+networks:
+  redis-demo:
