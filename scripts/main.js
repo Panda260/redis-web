@@ -114,10 +114,13 @@ async function sendCommand(command) {
       body: JSON.stringify({ command }),
     });
   } catch (error) {
-    const protocolHint =
-      window.location.protocol === "https:" && state.protocol === "http"
-        ? "This page is loaded over HTTPS, so HTTP endpoints will be blocked."
-        : "Check that the selected protocol matches your endpoint (http vs https) and that the port is correct.";
+    const protocolHint = (() => {
+      if (window.location.protocol === "https:" && state.protocol === "http") {
+        const insecureUrlSuggestion = window.location.href.replace(/^https:/i, "http:");
+        return `This page is loaded over HTTPS, so HTTP endpoints will be blocked. Open the UI over HTTP instead: ${insecureUrlSuggestion}.`;
+      }
+      return "Check that the selected protocol matches your endpoint (http vs https) and that the port is correct.";
+    })();
 
     const corsHint = "CORS must be enabled on the Redis HTTP endpoint for the request to succeed.";
 
@@ -147,8 +150,9 @@ async function handleConnect(event) {
   const protocol = dom.protocol.value || "http";
 
   if (window.location.protocol === "https:" && protocol === "http") {
+    const insecureUrlSuggestion = window.location.href.replace(/^https:/i, "http:");
     setStatus(
-      "HTTPS pages cannot call HTTP endpoints. Pick https or open the UI over http.",
+      `HTTPS pages cannot call HTTP endpoints. Open this UI over HTTP instead: ${insecureUrlSuggestion}`,
       "danger"
     );
     return;
