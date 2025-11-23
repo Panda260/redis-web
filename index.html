@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redis Messages Manager</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Hash: messages</p>
+      <h1>Redis Messages Manager</h1>
+      <p class="subhead">Connect with your Redis HTTP endpoint and edit the message keys from a browser.</p>
+    </div>
+    <div class="status-box" id="connection-status">Not connected</div>
+  </header>
+
+  <section class="connection-panel">
+    <div class="panel">
+      <h2>Connection</h2>
+      <form id="connection-form" class="form-grid">
+        <label>
+          Protocol
+          <select id="redis-protocol" name="protocol">
+            <option value="http">http</option>
+            <option value="https">https</option>
+          </select>
+        </label>
+        <label>
+          Redis URL
+          <input id="redis-host" name="host" type="text" placeholder="example.com" required />
+        </label>
+        <label>
+          Port
+          <input id="redis-port" name="port" type="number" min="1" max="65535" placeholder="443" />
+        </label>
+        <label>
+          Username
+          <input id="redis-username" name="username" type="text" placeholder="default" />
+        </label>
+        <label>
+          Password / Token
+          <input id="redis-password" name="password" type="password" placeholder="Required" required />
+        </label>
+        <div class="form-actions">
+          <button type="submit" id="connect-btn">Connect</button>
+          <button type="button" id="refresh-btn" disabled>Refresh</button>
+        </div>
+      </form>
+      <p class="hint">
+        The page uses the Redis REST API (for example Upstash or Webdis). Choose the correct protocol so browsers don't block
+        mixed content; the port placeholder updates automatically for http/https. Credentials stay in your browser.
+      </p>
+    </div>
+  </section>
+
+  <main class="main-grid">
+    <aside class="panel categories">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Filters</p>
+          <h2>Categories</h2>
+        </div>
+        <button id="clear-filter" class="link-button" disabled>Clear</button>
+      </div>
+      <ul id="category-list" class="category-list"></ul>
+    </aside>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">messages hash</p>
+          <h2>Fields</h2>
+        </div>
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Filter fields..." />
+          <span id="total-count" class="muted"></span>
+        </div>
+      </div>
+
+      <form id="add-form" class="add-form">
+        <input id="new-field" type="text" placeholder="field name (e.g. clan.command.create)" required />
+        <input id="new-value" type="text" placeholder="value" required />
+        <button type="submit">Add</button>
+      </form>
+
+      <div id="entries" class="entries"></div>
+    </section>
+  </main>
+
+  <template id="entry-template">
+    <article class="entry">
+      <div class="entry-header">
+        <div>
+          <p class="muted small" data-category></p>
+          <h3 data-field></h3>
+        </div>
+        <div class="entry-actions">
+          <button data-save>Save</button>
+          <button data-delete class="danger">Delete</button>
+        </div>
+      </div>
+      <textarea data-value rows="3"></textarea>
+      <p class="entry-status" data-status></p>
+    </article>
+  </template>
+
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
