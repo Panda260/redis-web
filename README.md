@@ -36,8 +36,8 @@ Wenn `Failed to create deployment (status: 404)` auftaucht:
 - Kontrolliere, dass die Umgebung `github-pages` existiert (wird beim ersten Lauf angelegt).
 - Workflow nach der Aktivierung erneut ausführen – danach sollte der Deploy ohne Merge-Konflikte durchlaufen.
 
-## Docker Image via GHCR
-Das Repository kann als Docker-Image auf GitHub Container Registry (GHCR) gebaut werden. Der Workflow `.github/workflows/ghcr-image.yml` pusht bei Änderungen auf `main` automatisch nach `ghcr.io/<OWNER>/redis-web`.
+## Docker Images via GHCR
+Das Repository kann als Docker-Images auf GitHub Container Registry (GHCR) gebaut werden. Die Workflows `.github/workflows/ghcr-image.yml` und `.github/workflows/ghcr-api-image.yml` pushen bei Änderungen auf `main` automatisch nach `ghcr.io/<OWNER>/redis-web` bzw. `ghcr.io/<OWNER>/redis-web-api`.
 
 ### Lokales Bauen
 ```bash
@@ -59,7 +59,7 @@ Ersetze bei Bedarf `panda260` durch den GitHub-Nutzer oder die Organisation des 
 Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
 
 - `redis`: Redis-Server mit Passwort (Standard `redispw`).
-- `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht (Standard-Build-Kontext `./redis-api`).
+- `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht (Standard-Build-Kontext `./redis-api`, Standard-Image `ghcr.io/panda260/redis-web-api:latest`).
 - `redis-web`: Dieses Webinterface, vorkonfiguriert für den internen API-Service.
 
 Starten unter http://localhost:8084:

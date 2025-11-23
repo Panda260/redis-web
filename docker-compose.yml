@@ -8,7 +8,7 @@ services:
       - redis-demo
 
   redis-api:
-    image: ${REDIS_API_IMAGE:-redis-web-api:local}
+    image: ${REDIS_API_IMAGE:-ghcr.io/panda260/redis-web-api:latest}
     build:
       context: ${REDIS_API_BUILD_CONTEXT:-./redis-api}
     pull_policy: ${REDIS_API_PULL_POLICY:-never}
