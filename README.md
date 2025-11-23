@@ -65,6 +65,12 @@ Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
 Starten unter http://localhost:8084:
 
 ```bash
+# Eigenes vorgebautes Image verwenden (z.B. aus einer Registry)
+export REDIS_API_IMAGE=registry.example.com/redis-web-api:latest
+docker compose up -d
+
+# Alternativ Build-Kontext aus einem Git-Repository referenzieren
+export REDIS_API_BUILD_CONTEXT=https://github.com/<OWNER>/redis-web.git#main:redis-api
 docker compose up -d
 ```
 
