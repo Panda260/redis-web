@@ -62,7 +62,7 @@ Die `docker-compose.yml` bringt jetzt einen kompletten Stack mit:
 - `redis-api`: schlanke REST-Bridge, die JSON-Befehle an Redis weiterreicht.
 - `redis-web`: Dieses Webinterface, vorkonfiguriert für den internen API-Service.
 
-Starten unter http://localhost:8080:
+Starten unter http://localhost:8084:
 
 ```bash
 docker compose up -d

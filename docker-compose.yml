@@ -32,7 +32,7 @@ services:
       REDIS_WEB_PASSWORD: ${REDIS_PASSWORD:-redispw}
       PREFILL_PASSWORD: "${PREFILL_PASSWORD:-false}"
     ports:
-      - "8080:80"
+      - "8084:80"
     depends_on:
       - redis-api
     networks:
