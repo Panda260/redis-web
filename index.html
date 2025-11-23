@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="stylesheet" href="styles/main.css" />
   </head>
+
 <body>
   <header class="app-header">
     <div>
@@ -30,7 +31,7 @@
         </label>
         <label>
           Redis URL
-          <input id="redis-host" name="host" type="text" placeholder="example.com" required />
+          <input id="redis-host" name="host" type="text" placeholder="https://example.com" required />
         </label>
         <label>
           Port
@@ -49,10 +50,7 @@
           <button type="button" id="refresh-btn" disabled>Refresh</button>
         </div>
       </form>
-      <p class="hint">
-        The page uses the Redis REST API (for example Upstash or Webdis). Choose the correct protocol so browsers don't block
-        mixed content; the port placeholder updates automatically for http/https. Credentials stay in your browser.
-      </p>
+      <p class="hint">The page uses the Redis REST API (for example Upstash or Webdis). Credentials stay in your browser.</p>
     </div>
   </section>
 
