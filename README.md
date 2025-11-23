@@ -38,3 +38,35 @@ Wenn `Failed to create deployment (status: 404)` auftaucht:
 - Prüfe, ob Pages in den Repository-Einstellungen aktiviert ist.
 - Kontrolliere, dass die Umgebung `github-pages` existiert (wird beim ersten Lauf angelegt).
 - Workflow nach der Aktivierung erneut ausführen – danach sollte der Deploy ohne Merge-Konflikte durchlaufen.
+
+## Docker Image via GHCR
+Das Repository kann als Docker-Image auf GitHub Container Registry (GHCR) gebaut werden. Der Workflow `.github/workflows/ghcr-image.yml` pusht bei Änderungen auf `main` automatisch nach `ghcr.io/<OWNER>/redis-web`.
+
+### Lokales Bauen
+```bash
+docker build -t ghcr.io/<OWNER>/redis-web:local .
+docker run --rm -p 8080:80 ghcr.io/<OWNER>/redis-web:local
+```
+
+Die Seite ist danach unter http://localhost:8080 erreichbar.
+
+### Image aus GHCR nutzen
+```bash
+docker pull ghcr.io/panda260/redis-web:latest
+docker run --rm -p 8080:80 ghcr.io/panda260/redis-web:latest
+```
+
+Ersetze bei Bedarf `panda260` durch den GitHub-Nutzer oder die Organisation des Repositories. Mit Tags aus Branch- oder Release-Namen kannst du auch bestimmte Stände ziehen (siehe Workflow-Definition für die vergebenen Tags).
+
+### Docker Compose
+Eine einfache `docker-compose.yml` zum lokalen Starten liegt im Repository. Starte die Seite unter http://localhost:8080 mit:
+
+```bash
+docker compose up -d
+```
+
+Zum Stoppen und Entfernen der Container:
+
+```bash
+docker compose down
+```

@@ -1,0 +1,7 @@
+services:
+  redis-web:
+    image: ghcr.io/panda260/redis-web:latest
+    container_name: redis-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
