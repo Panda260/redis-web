@@ -114,8 +114,15 @@ async function sendCommand(command) {
       body: JSON.stringify({ command }),
     });
   } catch (error) {
+    const protocolHint =
+      window.location.protocol === "https:" && state.protocol === "http"
+        ? "This page is loaded over HTTPS, so HTTP endpoints will be blocked."
+        : "Check that the selected protocol matches your endpoint (http vs https) and that the port is correct.";
+
+    const corsHint = "CORS must be enabled on the Redis HTTP endpoint for the request to succeed.";
+
     throw new Error(
-      `Network error: ${error.message}. If you are on HTTPS, HTTP endpoints will be blocked.`
+      `Network error: ${error.message}. ${protocolHint} ${corsHint}`
     );
   }
 
